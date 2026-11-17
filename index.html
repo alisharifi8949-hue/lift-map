@@ -30,7 +30,8 @@ main{flex:1;overflow:auto;padding:0 14px 90px}
 .mu{color:var(--mu);font-size:13px}
 .badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;color:#fff}
 .mapbox{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
-.mapbox svg{display:block;width:100%;height:60vh;touch-action:none}
+.mapbox>svg{display:block;width:100%;height:60vh;touch-action:none}
+.leaflet-control-attribution svg,.leaflet-attribution-flag{display:inline!important;width:1em!important;height:.67em!important;vertical-align:baseline!important}
 .note{font-size:12px;color:var(--mu);padding:8px 4px}
 .fab{z-index:10;position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:18px;width:56px;height:56px;border-radius:50%;border:0;background:var(--pr);color:#fff;font-size:30px;box-shadow:0 4px 14px #0004;cursor:pointer}
 .sheet{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;z-index:20}
@@ -202,7 +203,7 @@ function addTiles(m){m._tl=makeTiles().addTo(m)}
 function retile(){try{[mainMap,showMap,pickMap].forEach(m=>{if(m&&m._tl){m.removeLayer(m._tl);m._tl=makeTiles().addTo(m);m._tl.bringToBack()}})}catch(e){}}
 if(window.matchMedia)try{matchMedia("(prefers-color-scheme:dark)").addEventListener("change",retile)}catch(e){}
 function buildMap(el,pts,o){o=o||{};
-  const m=L.map(el);addTiles(m);
+  const m=L.map(el,{attributionControl:false});L.control.attribution({prefix:false}).addTo(m);addTiles(m);
   const grp=(o.cluster&&L.markerClusterGroup)?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,iconCreateFunction:c=>L.divIcon({className:"pinw",iconSize:[38,38],html:`<div class="cl">${nf(c.getChildCount())}</div>`})}):L.layerGroup();
   pts.forEach(p=>{const mk=L.marker([p.lat,p.lng],{icon:pinIcon(p,o.big)});if(!o.noClick)mk.on("click",()=>showDetail(p.id));grp.addLayer(mk)});
   grp.addTo(m);
@@ -222,7 +223,7 @@ function pickLoc(la,lo,done){
   <div id="pk_m" class="lmap" style="flex:1;height:auto;min-height:0"></div>
   <div class="sh-nav"><div class="mu" id="pk_t" style="flex:1;align-self:center">روی نقشه بزنید یا پین را بکشید</div><button class="btn p" id="pk_ok" disabled style="flex:none;padding:10px 26px">تأیید</button></div>`;
   el.classList.add("on");
-  const m=pickMap=L.map("pk_m");addTiles(m);
+  const m=pickMap=L.map("pk_m",{attributionControl:false});L.control.attribution({prefix:false}).addTo(m);addTiles(m);
   if(has)m.setView([la,lo],17);else if(all.length)m.fitBounds(L.latLngBounds(all.map(p=>[p.lat,p.lng])),{padding:[30,30],maxZoom:12});else m.setView([32.4,53.7],5);
   setTimeout(()=>m.invalidateSize(),100);
   let pos=null,mk=null;
