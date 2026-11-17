@@ -3,13 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="نقشه لیفت">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#1d6fe8">
 <title>نقشه آسانسور و بالابر</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#1a1d23;--mu:#6b7280;--bd:#e3e6eb;--pr:#1d6fe8;--el:#1d6fe8;--li:#e8832a;--hl:#8b5cf6;--ok:#16a34a;
@@ -47,56 +40,41 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-
 .photos div{position:relative}
 .photos img{width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:pointer}
 .photos i{position:absolute;top:2px;left:2px;background:#000a;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;font-style:normal;line-height:20px;font-size:13px}
+.vids video{width:100%;max-height:60vh;border-radius:12px;margin-top:8px;background:#000;display:block}
+.vids a{font-size:13px;color:var(--pr)}
+.vt{position:relative;margin-top:8px}
+.vt video{width:100%;max-height:200px;border-radius:12px;background:#000;display:block}
+.vt i{position:absolute;top:6px;left:6px;background:#000a;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;font-style:normal;line-height:24px;font-size:15px;cursor:pointer}
+:root[data-theme=dark]{color-scheme:dark;--bg:#14161a;--card:#1f2228;--tx:#eceef2;--mu:#9aa1ad;--bd:#2f333b}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+.chip{flex:none;padding:7px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--pr);border-color:var(--pr);color:#fff}
+.chip b{margin-inline-start:5px}
+#show{position:fixed;inset:0;z-index:25;background:var(--bg);display:none;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#show.on{display:flex}
+.sh-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.sh-body{flex:1;overflow:auto;padding:0 14px}
+.sh-body svg{height:34vh}
+.sh-med{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px 0}
+.sh-med img,.sh-med video{height:34vh;max-width:90%;border-radius:12px;scroll-snap-align:start;flex:none;background:#000}
+.sh-nav{display:flex;gap:8px;padding:10px 14px}
+.sh-nav .btn{flex:1;text-align:center;text-decoration:none}
 .big{width:100%;border-radius:12px;margin-top:8px}
 .kv{display:flex;justify-content:space-between;border-bottom:1px solid var(--bd);padding:7px 0}
 #viewer{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:30}
 #viewer img{max-width:96%;max-height:92%}
 .empty{text-align:center;color:var(--mu);padding:40px 10px}
-.mapbox{isolation:isolate}#lm{height:62vh;z-index:0}
-#pk{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
-#pkm{flex:1}.pkb{display:flex;gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px))}.pkb .btn{flex:1}
-
-/* Leaflet core (inlined so no external stylesheet is needed) */
-#lm,#pkm{direction:ltr}
-.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
-.leaflet-container{overflow:hidden;background:#ddd;-webkit-tap-highlight-color:transparent;position:relative}
-.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{user-select:none;-webkit-user-drag:none}
-.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
-.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
-.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}
-.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}
-.leaflet-container img.leaflet-tile,.leaflet-container .leaflet-tile-pane img{max-width:none!important;max-height:none!important;width:auto;padding:0}
-.leaflet-container{touch-action:none}
-.leaflet-zoom-animated{transform-origin:0 0}
-.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}
-.leaflet-zoom-anim .leaflet-tile,.leaflet-pan-anim .leaflet-tile{transition:none}
-.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}
-.leaflet-interactive{cursor:pointer}
-.leaflet-tooltip{position:absolute;padding:3px 8px;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;white-space:nowrap;pointer-events:none;font-size:12px;box-shadow:0 1px 4px #0004}
-.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
-.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}
-.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}
-.leaflet-top .leaflet-control{margin-top:10px}.leaflet-left .leaflet-control{margin-left:10px}
-.leaflet-bar{border-radius:8px;box-shadow:0 1px 5px #0005;overflow:hidden}
-.leaflet-bar a{display:block;width:36px;height:36px;line-height:36px;text-align:center;text-decoration:none;background:var(--card);color:var(--tx);border-bottom:1px solid var(--bd);font:bold 20px/36px sans-serif}
-.leaflet-bar a:last-child{border-bottom:0}
-.leaflet-control-zoom-in span,.leaflet-control-zoom-out span{pointer-events:none}
-.leaflet-control-container{position:static}
-.ballw{background:none;border:0}
-.ball{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px #0007;cursor:pointer}
-.blab{position:absolute;top:33px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;background:var(--card);color:var(--tx);padding:1px 7px;border-radius:6px;box-shadow:0 1px 4px #0005;pointer-events:none}
-.photos.g div{width:calc(50% - 3px)}.photos.g img{width:100%;height:150px}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <div id="app">
-  <header><h1>🏗️ نقشه آسانسور و بالابر</h1><button class="btn" id="bk">پشتیبان</button></header>
+  <header><h1 id="ttl">🏗️ نقشه آسانسور و بالابر</h1><div class="row"><button class="btn" id="pl0" aria-label="نمایش">🎬</button><button class="btn" id="se" aria-label="تنظیمات">⚙️</button><button class="btn" id="bk">پشتیبان</button></div></header>
   <div class="tabs"><button class="tab on" data-t="map">نقشه</button><button class="tab" data-t="list">فهرست</button></div>
   <main id="main"></main>
 </div>
 <button class="fab" id="add" aria-label="افزودن">+</button>
 <div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
+<div id="show"></div>
 <div id="viewer"><img id="vimg" alt=""></div>
 
 <script>
@@ -107,7 +85,7 @@ let items=[],tab="map",db=null,draft=null,memFallback=false;
 /* ---------- storage (IndexedDB, fallback to memory) ---------- */
 function openDB(){return new Promise(res=>{try{const r=indexedDB.open("liftmap",1);r.onupgradeneeded=()=>r.result.createObjectStore("p",{keyPath:"id"});r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>{memFallback=true;res()}}catch(e){memFallback=true;res()}})}
 function loadAll(){return new Promise(res=>{if(!db)return res([]);try{const q=db.transaction("p").objectStore("p").getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})}
-function put(o){if(!db)return;try{db.transaction("p","readwrite").objectStore("p").put(o)}catch(e){}}
+function put(o){if(!db)return;try{const t=db.transaction("p","readwrite");t.objectStore("p").put(o);t.onerror=t.onabort=()=>alert("ذخیرهٔ دائمی انجام نشد (احتمالاً حافظهٔ مرورگر پر است). ویدیو یا عکس‌های کمتری اضافه کنید.")}catch(e){alert("ذخیرهٔ دائمی انجام نشد.")}}
 function del(id){if(!db)return;try{db.transaction("p","readwrite").objectStore("p").delete(id)}catch(e){}}
 
 /* ---------- helpers ---------- */
@@ -117,54 +95,76 @@ const gmap=p=>`https://www.google.com/maps?q=${p.lat},${p.lng}`;
 function resize(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=900,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.7))};im.src=r.result};r.readAsDataURL(file)})}
 
 /* ---------- views ---------- */
+let flt="all",q="",sl=[],si=0;
+const DS={co:"",ph:"",th:"auto",tab:"map",hc:false,start:false};
+const S=(()=>{try{return Object.assign({},DS,JSON.parse(localStorage.getItem("lm_s")||"{}"))}catch(e){return Object.assign({},DS)}})();
+function applyS(){const r=document.documentElement;if(S.th==="auto")r.removeAttribute("data-theme");else r.dataset.theme=S.th;$("#ttl").textContent="🏗️ "+(S.co||"نقشه آسانسور و بالابر")}
+const vis=()=>items.filter(p=>(flt==="all"||p.type===flt)&&(!q||[p.name,p.client,p.spec,p.notes,p.status].join(" ").includes(q)));
+const nf=n=>n.toLocaleString("fa");
+const b2d=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+const d2b=u=>{const [h,x]=u.split(","),s=atob(x),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new Blob([a],{type:h.match(/:(.*?);/)[1]})};
+function chips(){const c=t=>items.filter(p=>p.type===t).length;
+  return '<div class="chips">'+[["all","همه",items.length]].concat(Object.keys(TYPES).map(k=>[k,TYPES[k].n,c(k)])).map(a=>`<button class="chip${flt===a[0]?" on":""}" data-f="${a[0]}">${a[1]}<b>${nf(a[2])}</b></button>`).join("")+'</div>'+(tab==="list"?`<input id="sq" placeholder="جستجو در نام، کارفرما، توضیحات…" value="${esc(q)}" style="margin-bottom:10px">`:"")}
+function bind(){const m=$("#main"),go=r=>r.querySelectorAll("[data-id]").forEach(e=>e.onclick=()=>showDetail(e.dataset.id));go(m);
+  m.querySelectorAll("[data-f]").forEach(e=>e.onclick=()=>{flt=e.dataset.f;render()});
+  const s=$("#sq");if(s)s.oninput=()=>{q=s.value.trim();const v=$("#vw");v.innerHTML=listView()||'<div class="empty">موردی پیدا نشد</div>';go(v)}}
+function shareP(p){const t=p.name+(p.spec?" — "+p.spec:"")+(p.lat!=null?"\n"+gmap(p):"");
+  if(navigator.share)navigator.share({title:p.name,text:t}).catch(e=>{if(e.name!=="AbortError")prompt("کپی کنید:",t)});else prompt("کپی کنید:",t)}
+function dl(name,data){const b=data instanceof Blob?data:new Blob([data],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function saveVid(b){const e=(b.type.split("/")[1]||"mp4").split(";")[0];dl("video."+(["mp4","webm","mov"].includes(e)?e:"mp4"),b)}
+function showcase(i){sl=vis();if(!sl.length){alert("موردی برای نمایش نیست");return}si=Math.max(0,Math.min(i||0,sl.length-1));drawShow();$("#show").classList.add("on")}
+function drawShow(){const p=sl[si],n=sl.length,
+  ph=(p.photos||[]).map(s=>`<img src="${s}" alt="">`).join(""),vd=(p.videos||[]).map(b=>`<video src="${URL.createObjectURL(b)}" controls playsinline preload="metadata"></video>`).join(""),
+  rows=[["کارفرما",S.hc?"":p.client],["مشخصات",p.spec],["وضعیت",p.status],["تاریخ نصب",p.date]].filter(r=>r[1]).map(r=>`<div class="kv"><span class="mu">${r[0]}</span><span>${esc(r[1])}</span></div>`).join("");
+  $("#show").innerHTML=`<div class="sh-top"><b>${esc(S.co||"نمونه‌کارها")}</b><span class="mu">${nf(si+1)} / ${nf(n)}</span><button class="btn" id="sx">✕ بستن</button></div>
+  <div class="sh-body"><h2 style="margin:4px 0 8px">${esc(p.name)} <span class="badge" style="background:${TYPES[p.type].c}">${TYPES[p.type].n}</span></h2>
+  ${p.lat!=null?mapView(p.id).replace(/<div class="note">[\s\S]*$/,""):""}
+  ${ph||vd?`<div class="sh-med">${ph}${vd}</div>`:""}${rows}${p.notes?`<p>${esc(p.notes)}</p>`:""}${S.ph?`<p class="mu">📞 ${esc(S.ph)}</p>`:""}</div>
+  <div class="sh-nav"><button class="btn" id="spv">→ قبلی</button>${p.lat!=null?`<a class="btn p" href="${gmap(p)}" target="_blank" rel="noopener">📍 گوگل‌مپ</a>`:""}<button class="btn" id="snx">بعدی ←</button></div>`;
+  $("#sx").onclick=()=>$("#show").classList.remove("on");
+  $("#spv").onclick=()=>{si=(si-1+n)%n;drawShow()};$("#snx").onclick=()=>{si=(si+1)%n;drawShow()};
+  document.querySelectorAll(".sh-med img").forEach(i=>i.onclick=()=>viewImg(i.src))}
+let tx=0;$("#show").addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
+$("#show").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70&&sl.length>1&&!e.target.closest(".sh-med")){si=(si+(d<0?1:-1)+sl.length)%sl.length;drawShow()}},{passive:true});
+$("#pl0").onclick=()=>showcase(0);
+$("#se").onclick=()=>{openSheet(`<h2 style="margin:0 0 8px">⚙️ تنظیمات</h2>
+  <label>نام شرکت / برند (بالای برنامه و حالت نمایش)</label><input id="s_co" value="${esc(S.co)}">
+  <label>شمارهٔ تماس (در حالت نمایش)</label><input id="s_ph" inputmode="tel" value="${esc(S.ph)}">
+  <label>پوسته</label><select id="s_th"><option value="auto">خودکار</option><option value="light">روشن</option><option value="dark">تیره</option></select>
+  <label>صفحهٔ شروع</label><select id="s_tab"><option value="map">نقشه</option><option value="list">فهرست</option></select>
+  <label><input type="checkbox" id="s_hc" style="width:auto"> مخفی کردن نام کارفرما در حالت نمایش</label>
+  <label><input type="checkbox" id="s_st" style="width:auto"> باز شدن برنامه مستقیم در حالت نمایش</label>
+  <p class="mu">برای دسترسی سریع، لینک برنامه را به صفحهٔ اصلی گوشی اضافه کنید. با گذاشتن <b>#showcase</b> آخر لینک هم مستقیم وارد حالت نمایش می‌شود.</p>
+  <div class="row"><button class="btn p" id="s_ok" style="flex:1">ذخیره</button><button class="btn" id="s_cl">بستن</button></div>`);
+  $("#s_th").value=S.th;$("#s_tab").value=S.tab;$("#s_hc").checked=S.hc;$("#s_st").checked=S.start;$("#s_cl").onclick=closeSheet;
+  $("#s_ok").onclick=()=>{S.co=$("#s_co").value.trim();S.ph=$("#s_ph").value.trim();S.th=$("#s_th").value;S.tab=$("#s_tab").value;S.hc=$("#s_hc").checked;S.start=$("#s_st").checked;try{localStorage.setItem("lm_s",JSON.stringify(S))}catch(e){}applyS();closeSheet()}};
 function render(){
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
   const m=$("#main");
   if(!items.length){m.innerHTML='<div class="empty">هنوز پروژه‌ای ثبت نشده.<br>با دکمه + اولین مورد را اضافه کنید.</div>';return}
-  m.innerHTML=tab==="map"?mapView():listView();
-  m.querySelectorAll("[data-id]").forEach(e=>e.onclick=()=>showDetail(e.dataset.id));
-  initMap();
+  m.innerHTML=chips()+'<div id="vw">'+((tab==="map"?mapView():listView())||'<div class="empty">موردی پیدا نشد</div>')+'</div>';bind();
 }
 function listView(){
-  return items.slice().sort((a,b)=>b.id.localeCompare(a.id)).map(p=>`<div class="card" data-id="${p.id}">
+  return vis().sort((a,b)=>b.id.localeCompare(a.id)).map(p=>`<div class="card" data-id="${p.id}">
   ${p.photos&&p.photos[0]?`<img class="thumb" src="${p.photos[0]}" alt="">`:'<div class="thumb"></div>'}
   <div><b>${esc(p.name)}</b><span class="badge" style="background:${TYPES[p.type].c}">${TYPES[p.type].n}</span>
-  <div class="mu">${esc(p.client||"")} ${p.status?"· "+esc(p.status):""}</div></div></div>`).join("");
+  <div class="mu">${esc(p.client||"")} ${p.status?"· "+esc(p.status):""} ${(p.videos||[]).length?"· 🎥 "+p.videos.length:""}</div></div></div>`).join("");
 }
-function mapView(){
-  const pts=items.filter(p=>isFinite(p.lat)&&isFinite(p.lng));
+function mapView(hl){
+  const pts=vis().filter(p=>p.lat!=null&&p.lng!=null);
   if(!pts.length)return listView();
-  return `<div class="mapbox"><div id="lm"></div></div>
-  <div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. نقشه برای نمایش به اینترنت نیاز دارد. © OpenStreetMap contributors</div>`;
-}
-let lmap=null;
-const HEX={el:"#1d6fe8",li:"#e8832a",hl:"#8b5cf6"};
-const TILE="https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-function initMap(){
-  if(lmap){try{lmap.remove()}catch(e){}lmap=null}
-  const box=$("#lm");if(!box)return;
-  if(typeof L==="undefined"){box.innerHTML='<div class="empty">نقشه بارگذاری نشد. برای دیدن نقشه به اینترنت نیاز است.</div>';return}
-  const pts=items.filter(p=>isFinite(p.lat)&&isFinite(p.lng));
-  lmap=L.map(box,{attributionControl:false});
-  L.tileLayer(TILE,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(lmap);
-  const g=L.featureGroup(pts.map(p=>L.marker([p.lat,p.lng],{keyboard:false,icon:L.divIcon({className:"ballw",iconSize:[30,30],iconAnchor:[15,15],html:'<div class="ball" style="background:'+HEX[p.type]+'"></div><div class="blab">'+esc(p.name)+'</div>'})}).on("click",()=>showDetail(p.id)))).addTo(lmap);
-  lmap.fitBounds(g.getBounds().pad(.3),{maxZoom:16});
-}
-function pickMap(){
-  if(typeof L==="undefined"){$("#gpsmsg").textContent="برای نقشه به اینترنت نیاز است.";return}
-  const la=parseFloat($("#f_lat").value),lo=parseFloat($("#f_lng").value),has=isFinite(la)&&isFinite(lo);
-  const o=document.createElement("div");o.id="pk";
-  o.innerHTML='<div id="pkm"></div><div class="pkb"><button class="btn p" id="pkok">تأیید موقعیت</button><button class="btn" id="pkg">📍 موقعیت من</button><button class="btn" id="pkx">انصراف</button></div>';
-  document.body.appendChild(o);
-  const first=items.find(p=>isFinite(p.lat)&&isFinite(p.lng));
-  const m=L.map("pkm",{attributionControl:false}).setView(has?[la,lo]:first?[first.lat,first.lng]:[35.7,51.4],has?17:12);
-  L.tileLayer(TILE,{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(m);
-  let mk=null;const set=ll=>{if(mk)mk.setLatLng(ll);else mk=L.marker(ll,{icon:L.divIcon({className:"ballw",iconSize:[30,30],iconAnchor:[15,15],html:'<div class="ball" style="background:#dc2626"></div>'})}).addTo(m)};
-  if(has)set([la,lo]);
-  m.on("click",e=>set(e.latlng));
-  $("#pkg").onclick=()=>navigator.geolocation&&navigator.geolocation.getCurrentPosition(r=>{const ll=[r.coords.latitude,r.coords.longitude];set(ll);m.setView(ll,17)});
-  $("#pkok").onclick=()=>{if(mk){const ll=mk.getLatLng();$("#f_lat").value=ll.lat.toFixed(6);$("#f_lng").value=ll.lng.toFixed(6);$("#gpsmsg").textContent="ثبت شد ✓"}o.remove()};
-  $("#pkx").onclick=()=>o.remove();
+  const W=400,H=500,pad=40;
+  let la=pts.map(p=>p.lat),lo=pts.map(p=>p.lng);
+  let minA=Math.min(...la),maxA=Math.max(...la),minO=Math.min(...lo),maxO=Math.max(...lo);
+  const dA=Math.max(maxA-minA,0.002),dO=Math.max(maxO-minO,0.002);
+  const cosk=Math.cos((minA+maxA)/2*Math.PI/180);
+  const sc=Math.min((W-2*pad)/(dO*cosk),(H-2*pad)/dA);
+  const cx=(minO+maxO)/2,cy=(minA+maxA)/2;
+  const X=o=>W/2+(o-cx)*cosk*sc,Y=a=>H/2-(a-cy)*sc;
+  let g="";for(let i=1;i<8;i++){g+=`<line x1="${i*W/8}" y1="0" x2="${i*W/8}" y2="${H}" stroke="var(--bd)"/><line x1="0" y1="${i*H/8}" x2="${W}" y2="${i*H/8}" stroke="var(--bd)"/>`}
+  const mk=pts.map(p=>`<g data-id="${p.id}" style="cursor:pointer">${hl===p.id?`<circle cx="${X(p.lng)}" cy="${Y(p.lat)}" r="26" fill="${TYPES[p.type].c}" opacity=".25"/>`:""}<circle cx="${X(p.lng)}" cy="${Y(p.lat)}" r="${hl===p.id?18:14}" fill="${TYPES[p.type].c}" stroke="#fff" stroke-width="3" opacity="${hl&&hl!==p.id?.45:1}"/><text x="${X(p.lng)}" y="${Y(p.lat)-20}" text-anchor="middle" font-size="12" fill="var(--tx)">${esc(p.name.slice(0,14))}</text></g>`).join("");
+  return `<div class="mapbox"><svg viewBox="0 0 ${W} ${H}">${g}${mk}</svg></div>
+  <div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. این نمای شماتیک مکان‌هاست؛ برای نقشهٔ خیابانی، در جزئیات هر پروژه «باز کردن در گوگل‌مپ» را بزنید.</div>`;
 }
 
 /* ---------- sheet ---------- */
@@ -179,18 +179,23 @@ function showDetail(id){
   <div style="margin-top:10px">
   ${[["کارفرما",p.client],["ظرفیت / مشخصات",p.spec],["وضعیت",p.status],["تاریخ نصب",p.date],["مختصات",p.lat!=null?p.lat.toFixed(5)+" , "+p.lng.toFixed(5):""]].filter(r=>r[1]).map(r=>`<div class="kv"><span class="mu">${r[0]}</span><span>${esc(r[1])}</span></div>`).join("")}
   ${p.notes?`<p>${esc(p.notes)}</p>`:""}</div>
-  <div class="photos g" id="ph">${(p.photos||[]).map((s,i)=>`<div><img src="${s}" data-i="${i}" alt=""></div>`).join("")}</div>
+  <div class="photos" id="ph">${(p.photos||[]).map((s,i)=>`<div><img src="${s}" data-i="${i}" alt=""></div>`).join("")}</div>
+  <div class="vids" id="vd">${(p.videos||[]).map((v,i)=>{const u=URL.createObjectURL(v);return `<video src="${u}" controls playsinline preload="metadata"></video><button class="btn" data-dv="${i}" style="margin-top:6px">⬇️ ذخیرهٔ ویدیو ${i+1}</button>`}).join("")}</div>
   <div class="row" style="margin-top:14px">
    ${p.lat!=null?`<a class="btn p" style="text-decoration:none;flex:1;text-align:center" href="${gmap(p)}" target="_blank" rel="noopener">باز کردن در گوگل‌مپ</a>`:""}
-   <button class="btn" id="ed">ویرایش</button><button class="btn" id="cl">بستن</button></div>`);
+   <button class="btn" id="ed">ویرایش</button><button class="btn" id="cl">بستن</button></div>
+  <div class="row" style="margin-top:8px">${p.lat!=null?`<a class="btn" style="text-decoration:none;flex:1;text-align:center" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">🧭 مسیریابی</a>`:""}<button class="btn" id="shr" style="flex:1">📤 اشتراک</button><button class="btn" id="pl" style="flex:1">🎬 نمایش</button></div>`);
   $("#ed").onclick=()=>form(p);$("#cl").onclick=closeSheet;
+  $("#shr").onclick=()=>shareP(p);
+  $("#pl").onclick=()=>{closeSheet();let i=vis().findIndex(x=>x.id===p.id);if(i<0){flt="all";q="";render();i=vis().findIndex(x=>x.id===p.id)}showcase(i)};
+  document.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>saveVid(p.videos[b.dataset.dv]));
   document.querySelectorAll("#ph img").forEach(i=>i.onclick=()=>viewImg(p.photos[i.dataset.i]));
 }
 function viewImg(s){$("#vimg").src=s;$("#viewer").style.display="flex"}
 $("#viewer").onclick=()=>$("#viewer").style.display="none";
 
 function form(p){
-  draft=p?JSON.parse(JSON.stringify(p)):{id:Date.now().toString(36),type:"el",name:"",client:"",spec:"",status:STAT[0],date:"",notes:"",lat:null,lng:null,photos:[]};
+  draft=p?Object.assign({},p,{photos:(p.photos||[]).slice(),videos:(p.videos||[]).slice()}):{id:Date.now().toString(36),type:"el",name:"",client:"",spec:"",status:STAT[0],date:"",notes:"",lat:null,lng:null,photos:[],videos:[]};
   const d=draft;
   openSheet(`<h2 style="margin:0">${p?"ویرایش":"پروژه جدید"}</h2>
   <label>نام پروژه</label><input id="f_name" value="${esc(d.name)}">
@@ -202,15 +207,19 @@ function form(p){
   <label>موقعیت</label>
   <div class="row"><input id="f_lat" inputmode="decimal" placeholder="عرض جغرافیایی" value="${d.lat??""}"><input id="f_lng" inputmode="decimal" placeholder="طول جغرافیایی" value="${d.lng??""}"></div>
   <button class="btn" id="gps" style="margin-top:8px;width:100%">📍 ثبت موقعیت فعلی من</button>
-  <div class="row" style="margin-top:8px"><button class="btn" id="omap" style="flex:1">🗺️ انتخاب روی نقشه</button><button class="btn" id="pst" style="flex:1">📋 چسباندن موقعیت</button></div>
+  <div class="row" style="margin-top:8px"><a class="btn" id="omap" href="https://www.google.com/maps" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none">🗺️ انتخاب روی نقشه</a><button class="btn" id="pst" style="flex:1">📋 چسباندن موقعیت</button></div>
   <div class="mu" id="gpsmsg"></div>
   <label>توضیحات</label><textarea id="f_notes" rows="3">${esc(d.notes)}</textarea>
   <label>عکس‌ها</label><input type="file" id="f_ph" accept="image/*" multiple>
   <div class="photos" id="pv"></div>
+  <label>ویدیوها</label><input type="file" id="f_vid" accept="video/*" multiple>
+  <div class="mu">ویدیوها فقط روی همین دستگاه ذخیره می‌شوند و در «پشتیبان» متنی نیستند. حجم زیاد حافظهٔ مرورگر را پر می‌کند.</div>
+  <div id="vv"></div>
   <div class="row" style="margin-top:16px"><button class="btn p" id="sv" style="flex:1">ذخیره</button>
   ${p?'<button class="btn d" id="rm">حذف</button>':""}<button class="btn" id="cn">انصراف</button></div>`);
   $("#f_type").value=d.type;$("#f_status").value=d.status;
-  pv();
+  pv();vv();
+  $("#f_vid").onchange=e=>{for(const f of e.target.files){if(f.size>150*1024*1024&&!confirm("این ویدیو بزرگ است (بیش از ۱۵۰ مگابایت) و ممکن است ذخیره نشود. ادامه می‌دهید؟"))continue;d.videos.push(new Blob([f],{type:f.type||"video/mp4"}))}e.target.value="";vv()};
   $("#f_ph").onchange=async e=>{for(const f of e.target.files)d.photos.push(await resize(f));e.target.value="";pv()};
   $("#gps").onclick=()=>{const m=$("#gpsmsg");m.textContent="در حال دریافت موقعیت…";
     if(!navigator.geolocation){m.textContent="مرورگر از GPS پشتیبانی نمی‌کند؛ مختصات را دستی وارد کنید.";return}
@@ -220,7 +229,6 @@ function form(p){
   function parseLoc(t){t=fa(t||"");let m=t.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||t.match(/[?&](?:q|ll|query)=(-?\d+\.\d+),(-?\d+\.\d+)/)||t.match(/(-?\d{1,3}\.\d+)[\s,،;]+(-?\d{1,3}\.\d+)/);return m?[parseFloat(m[1]),parseFloat(m[2])]:null}
   function applyLoc(t){const r=parseLoc(t),m=$("#gpsmsg");if(!r||Math.abs(r[0])>90||Math.abs(r[1])>180){m.textContent="مختصاتی پیدا نشد. اگر لینک کوتاه (goo.gl) است، لینک را باز کنید و مختصات بالای صفحه را کپی کنید.";return}$("#f_lat").value=r[0];$("#f_lng").value=r[1];m.textContent="ثبت شد ✓"}
   $("#omap").onclick=()=>{const la=parseFloat($("#f_lat").value),lo=parseFloat($("#f_lng").value);const u=isFinite(la)&&isFinite(lo)?`https://www.google.com/maps?q=${la},${lo}`:"https://www.google.com/maps";$("#omap").href=u;try{navigator.clipboard.writeText(u)}catch(e){}$("#gpsmsg").textContent="در گوگل‌مپ نقطه را نگه دارید تا پین بیفتد، مختصات بالای صفحه را بزنید تا کپی شود، برگردید و «چسباندن موقعیت» را بزنید."};
-  $("#omap").onclick=pickMap;
   $("#pst").onclick=async()=>{let t="";try{t=await navigator.clipboard.readText()}catch(e){}if(!t||!parseLoc(t))t=prompt("مختصات یا لینک گوگل‌مپ را بچسبانید:")||"";if(t)applyLoc(t)};
   if(p)$("#rm").onclick=()=>{if(confirm("این پروژه حذف شود؟")){items=items.filter(x=>x.id!==p.id);del(p.id);closeSheet();render()}};
   $("#sv").onclick=()=>{
@@ -230,24 +238,29 @@ function form(p){
     const i=items.findIndex(x=>x.id===d.id);if(i>=0)items[i]=d;else items.push(d);
     put(d);closeSheet();render()};
 }
+function vv(){const box=$("#vv");box.innerHTML=draft.videos.map((b,i)=>`<div class="vt"><video src="${URL.createObjectURL(b)}" controls playsinline preload="metadata"></video><i data-v="${i}">×</i></div>`).join("");
+  box.querySelectorAll("[data-v]").forEach(x=>x.onclick=()=>{draft.videos.splice(x.dataset.v,1);vv()})}
 function pv(){$("#pv").innerHTML=draft.photos.map((s,i)=>`<div><img src="${s}" alt=""><i data-r="${i}">×</i></div>`).join("");
   document.querySelectorAll("[data-r]").forEach(x=>x.onclick=()=>{draft.photos.splice(x.dataset.r,1);pv()})}
 
 /* ---------- backup ---------- */
 $("#bk").onclick=()=>{
   openSheet(`<h2 style="margin:0 0 8px">پشتیبان‌گیری</h2>
-  <p class="mu">اطلاعات فقط روی همین مرورگر ذخیره می‌شود. برای انتقال به گوشی یا مرورگر دیگر، متن پشتیبان را کپی و در آنجا وارد کنید.</p>
+  <p class="mu">اطلاعات فقط روی همین مرورگر ذخیره می‌شود (ویدیوها در پشتیبان متنی نیستند). برای انتقال به گوشی یا مرورگر دیگر، متن پشتیبان را کپی و در آنجا وارد کنید.</p>
   <textarea id="bt" rows="6" placeholder="برای وارد کردن، متن پشتیبان را اینجا بچسبانید"></textarea>
-  <div class="row" style="margin-top:10px"><button class="btn" id="ex">نمایش پشتیبان</button><button class="btn p" id="im">وارد کردن</button><button class="btn" id="cl2">بستن</button></div>`);
-  $("#ex").onclick=()=>{$("#bt").value=JSON.stringify(items);$("#bt").select()};
-  $("#im").onclick=()=>{try{const a=JSON.parse($("#bt").value);if(!Array.isArray(a))throw 0;a.forEach(o=>{if(o&&o.id&&o.name){const i=items.findIndex(x=>x.id===o.id);if(i>=0)items[i]=o;else items.push(o);put(o)}});closeSheet();render()}catch(e){alert("متن پشتیبان معتبر نیست")}};
+  <div class="row" style="margin-top:10px"><button class="btn" id="exf">💾 ذخیرهٔ فایل (با عکس و ویدیو)</button><button class="btn" id="imf">📂 وارد کردن از فایل</button><input type="file" id="imi" accept=".json,application/json" hidden></div>
+  <div class="row" style="margin-top:8px"><button class="btn" id="ex">نمایش پشتیبان متنی</button><button class="btn p" id="im">وارد کردن</button><button class="btn" id="cl2">بستن</button></div>`);
+  $("#ex").onclick=()=>{$("#bt").value=JSON.stringify(items.map(p=>Object.assign({},p,{videos:undefined})));$("#bt").select()};
+  $("#im").onclick=()=>{try{const a=JSON.parse($("#bt").value);if(!Array.isArray(a))throw 0;a.forEach(o=>{if(o&&o.id&&o.name){const i=items.findIndex(x=>x.id===o.id);o.videos=Array.isArray(o.videos)&&typeof o.videos[0]==="string"?o.videos.map(d2b):(i>=0?items[i].videos||[]:[]);if(i>=0)items[i]=o;else items.push(o);put(o)}});closeSheet();render()}catch(e){alert("متن پشتیبان معتبر نیست")}};
   $("#cl2").onclick=closeSheet;
+  $("#exf").onclick=async()=>{const b=$("#exf"),t=b.textContent;b.textContent="در حال آماده‌سازی…";try{const o=[];for(const p of items)o.push(Object.assign({},p,{videos:await Promise.all((p.videos||[]).map(b2d))}));dl("lift-map-backup.json",JSON.stringify(o))}catch(e){}finally{b.textContent=t}};
+  $("#imf").onclick=()=>$("#imi").click();
+  $("#imi").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#bt").value=await f.text();$("#im").click()};
 };
 
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
 $("#add").onclick=()=>form(null);
-(async()=>{await openDB();items=await loadAll();render()})();
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+(async()=>{applyS();tab=S.tab;await openDB();try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}items=await loadAll();render();if(S.start||location.hash==="#showcase")showcase(0)})();
 </script>
 </body>
 </html>
