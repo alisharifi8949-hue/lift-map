@@ -61,7 +61,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-
 #show.on{display:flex}
 .sh-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
 .sh-body{flex:1;overflow:auto;padding:0 14px}
-.sh-body svg{height:34vh}
+.sh-body>.mapbox>svg{height:34vh}
 .sh-med{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px 0}
 .sh-med img,.sh-med video{height:34vh;max-width:90%;border-radius:12px;scroll-snap-align:start;flex:none;background:#000}
 .sh-nav{display:flex;gap:8px;padding:10px 14px}
@@ -80,7 +80,8 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-
 .pin-l{position:absolute;top:32px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;direction:rtl;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:1px 6px;pointer-events:none;display:none}
 .zl .pin-l{display:block}
 .cl{width:38px;height:38px;border-radius:50%;background:var(--pr);color:#fff;border:3px solid #fff;box-shadow:0 1px 6px #0006;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-.leaflet-tile-pane,.leaflet-tile-container{-webkit-transform:translateZ(0);transform:translateZ(0)}
+:root[data-theme=dark] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}}
 .leaflet-container{-webkit-tap-highlight-color:transparent}
 #pick{position:fixed;inset:0;z-index:40;background:var(--bg);display:none;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 #pick.on{display:flex}
@@ -119,7 +120,7 @@ function resize(file){return new Promise(res=>{const r=new FileReader();r.onload
 let flt="all",q="",sl=[],si=0;
 const DS={co:"",ph:"",th:"auto",tab:"map",hc:false,start:false};
 const S=(()=>{try{return Object.assign({},DS,JSON.parse(localStorage.getItem("lm_s")||"{}"))}catch(e){return Object.assign({},DS)}})();
-function applyS(){const r=document.documentElement;if(S.th==="auto")r.removeAttribute("data-theme");else r.dataset.theme=S.th;$("#ttl").textContent="🏗️ "+(S.co||"نقشه آسانسور و بالابر");if(typeof retile==="function")retile()}
+function applyS(){const r=document.documentElement;if(S.th==="auto")r.removeAttribute("data-theme");else r.dataset.theme=S.th;$("#ttl").textContent="🏗️ "+(S.co||"نقشه آسانسور و بالابر")}
 const vis=()=>items.filter(p=>(flt==="all"||p.type===flt)&&(!q||[p.name,p.client,p.spec,p.notes,p.status].join(" ").includes(q)));
 const nf=n=>n.toLocaleString("fa");
 const b2d=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
@@ -195,13 +196,7 @@ let mainMap=null,showMap=null,pickMap=null;
 const hasLoc=p=>p.lat!=null&&p.lng!=null;
 function mapView(){return typeof L==="undefined"?svgMap():'<div class="mapbox"><div id="lmap" class="lmap"></div></div><div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. برای دیدن نام پروژه‌ها نقشه را بزرگ‌نمایی کنید. (نقشه برای نمایش به اینترنت نیاز دارد)</div>'}
 function pinIcon(p,big){return L.divIcon({className:"pinw",iconSize:[30,30],html:`<div class="pin${big?" big":""}" style="background:${TYPES[p.type].c}"></div><div class="pin-l">${esc(p.name)}</div>`})}
-const isDark=()=>{const t=document.documentElement.dataset.theme;return t==="dark"||(t!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)};
-function makeTiles(){return isDark()
-  ?L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,updateWhenIdle:true,keepBuffer:2,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>'})
-  :L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,updateWhenIdle:true,keepBuffer:2,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'})}
-function addTiles(m){m._tl=makeTiles().addTo(m)}
-function retile(){try{[mainMap,showMap,pickMap].forEach(m=>{if(m&&m._tl){m.removeLayer(m._tl);m._tl=makeTiles().addTo(m);m._tl.bringToBack()}})}catch(e){}}
-if(window.matchMedia)try{matchMedia("(prefers-color-scheme:dark)").addEventListener("change",retile)}catch(e){}
+function addTiles(m){L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m)}
 function buildMap(el,pts,o){o=o||{};
   const m=L.map(el,{attributionControl:false});L.control.attribution({prefix:false}).addTo(m);addTiles(m);
   const grp=(o.cluster&&L.markerClusterGroup)?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,iconCreateFunction:c=>L.divIcon({className:"pinw",iconSize:[38,38],html:`<div class="cl">${nf(c.getChildCount())}</div>`})}):L.layerGroup();
