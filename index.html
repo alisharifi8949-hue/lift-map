@@ -1,155 +1,330 @@
-cd /mnt/user-data/outputs && cp index.html /home/claude/index_prev.html && python3 - <<'PYEOF'
-import re
-s=open('index.html',encoding='utf-8').read()
-
-def rep(old,new,cnt=1):
-    global s
-    assert s.count(old)==cnt,(old[:60],s.count(old))
-    s=s.replace(old,new)
-
-# 1. Leaflet tags in head (CDN with fallback)
-rep('<title>نقشه آسانسور و بالابر</title>\n<style>',
-r'''<title>نقشه آسانسور و بالابر</title>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نقشه آسانسور و بالابر</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css'">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>window.L||document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>')</script>
-<style>''')
-
-# 2. CSS
-css=r'''
-.lmap{width:100%;height:62vh;min-height:320px;isolation:isolate}
-.sh-body .lmap{height:34vh;min-height:220px}
-.lmap.leaflet-container,#pkmap.leaflet-container{direction:ltr;font-family:inherit}
-.pin{width:100%;height:100%;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 6px #0007}
-.leaflet-tooltip.lbl{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-size:12px;padding:2px 6px;direction:rtl;box-shadow:none}
-.leaflet-tooltip-top.lbl:before{border-top-color:var(--card)}
-.nolbl .lbl{display:none}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tl-street{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}}
-:root[data-theme=dark] .tl-street{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+<script>if(!window.L)document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script>if(window.L&&!L.markerClusterGroup)document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"><\/script>')</script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1a1d23;--mu:#6b7280;--bd:#e3e6eb;--pr:#1d6fe8;--el:#1d6fe8;--li:#e8832a;--hl:#8b5cf6;--ok:#16a34a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14161a;--card:#1f2228;--tx:#eceef2;--mu:#9aa1ad;--bd:#2f333b}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,"Segoe UI",sans-serif;font-size:15px}
+#app{display:flex;flex-direction:column;height:100%}
+header{padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:18px;margin:0}
+.tabs{display:flex;gap:6px;padding:0 14px 10px}
+.tab{flex:1;padding:9px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;cursor:pointer}
+.tab.on{background:var(--pr);border-color:var(--pr);color:#fff}
+main{flex:1;overflow:auto;padding:0 14px 90px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;gap:10px;cursor:pointer}
+.thumb{width:60px;height:60px;border-radius:10px;background:var(--bd);object-fit:cover;flex:none}
+.card b{display:block;margin-bottom:3px}
+.mu{color:var(--mu);font-size:13px}
+.badge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;color:#fff}
+.mapbox{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.mapbox svg{display:block;width:100%;height:60vh;touch-action:none}
+.note{font-size:12px;color:var(--mu);padding:8px 4px}
+.fab{z-index:10;position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:18px;width:56px;height:56px;border-radius:50%;border:0;background:var(--pr);color:#fff;font-size:30px;box-shadow:0 4px 14px #0004;cursor:pointer}
+.sheet{position:fixed;inset:0;background:#0006;display:none;align-items:flex-end;z-index:20}
+.sheet.show{display:flex}
+.panel{background:var(--bg);width:100%;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font:inherit}
+.row{display:flex;gap:8px}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+.btn.p{background:var(--pr);border-color:var(--pr);color:#fff}
+.btn.d{color:#dc2626}
+.photos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.photos div{position:relative}
+.photos img{width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:pointer}
+.photos i{position:absolute;top:2px;left:2px;background:#000a;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;font-style:normal;line-height:20px;font-size:13px}
+.vids video{width:100%;max-height:60vh;border-radius:12px;margin-top:8px;background:#000;display:block}
+.vids a{font-size:13px;color:var(--pr)}
+.vt{position:relative;margin-top:8px}
+.vt video{width:100%;max-height:200px;border-radius:12px;background:#000;display:block}
+.vt i{position:absolute;top:6px;left:6px;background:#000a;color:#fff;border-radius:50%;width:24px;height:24px;text-align:center;font-style:normal;line-height:24px;font-size:15px;cursor:pointer}
+:root[data-theme=dark]{color-scheme:dark;--bg:#14161a;--card:#1f2228;--tx:#eceef2;--mu:#9aa1ad;--bd:#2f333b}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+.chip{flex:none;padding:7px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--pr);border-color:var(--pr);color:#fff}
+.chip b{margin-inline-start:5px}
+#show{position:fixed;inset:0;z-index:25;background:var(--bg);display:none;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#show.on{display:flex}
+.sh-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.sh-body{flex:1;overflow:auto;padding:0 14px}
+.sh-body svg{height:34vh}
+.sh-med{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:10px 0}
+.sh-med img,.sh-med video{height:34vh;max-width:90%;border-radius:12px;scroll-snap-align:start;flex:none;background:#000}
+.sh-nav{display:flex;gap:8px;padding:10px 14px}
+.sh-nav .btn{flex:1;text-align:center;text-decoration:none}
+.big{width:100%;border-radius:12px;margin-top:8px}
+.kv{display:flex;justify-content:space-between;border-bottom:1px solid var(--bd);padding:7px 0}
+#viewer{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:30}
+#viewer img{max-width:96%;max-height:92%}
+.empty{text-align:center;color:var(--mu);padding:40px 10px}
+.lmap{height:62vh;width:100%;isolation:isolate;direction:ltr;background:var(--bd)}
+.sh-body .lmap{height:34vh}
+.leaflet-container{font-family:inherit}
+.pinw{background:none;border:0}
+.pin{width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 5px #0006;margin:2px}
+.pin.big{width:30px;height:30px;margin:0}
+.pin-l{position:absolute;top:32px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;direction:rtl;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:1px 6px;pointer-events:none;display:none}
+.zl .pin-l{display:block}
+.cl{width:38px;height:38px;border-radius:50%;background:var(--pr);color:#fff;border:3px solid #fff;box-shadow:0 1px 6px #0006;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+:root[data-theme=dark] .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}}
 #pick{position:fixed;inset:0;z-index:40;background:var(--bg);display:none;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 #pick.on{display:flex}
-.pk-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;gap:8px}
-.pk-s{display:flex;gap:6px;padding:0 14px 8px}
-.pk-s input{flex:1;min-width:0}
-.pk-w{flex:1;position:relative;min-height:0}
-#pkmap{position:absolute;inset:0}
-.pk-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:38px;line-height:1;pointer-events:none;z-index:5;filter:drop-shadow(0 2px 3px #0008)}
-#pk_c{padding:8px 14px;text-align:center;direction:ltr;font-size:13px}
-</style>'''
-rep('\n</style>',css,1)
+</style>
+</head>
+<body>
+<div id="app">
+  <header><h1 id="ttl">🏗️ نقشه آسانسور و بالابر</h1><div class="row"><button class="btn" id="pl0" aria-label="نمایش">🎬</button><button class="btn" id="se" aria-label="تنظیمات">⚙️</button><button class="btn" id="bk">پشتیبان</button></div></header>
+  <div class="tabs"><button class="tab on" data-t="map">نقشه</button><button class="tab" data-t="list">فهرست</button></div>
+  <main id="main"></main>
+</div>
+<button class="fab" id="add" aria-label="افزودن">+</button>
+<div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
+<div id="show"></div>
+<div id="viewer"><img id="vimg" alt=""></div>
+<div id="pick"></div>
 
-# 3. picker markup
-rep('<div id="viewer"><img id="vimg" alt=""></div>',
-'''<div id="viewer"><img id="vimg" alt=""></div>
-<div id="pick"><div class="pk-top"><button class="btn" id="pk_x">✕ انصراف</button><b>انتخاب موقعیت روی نقشه</b><button class="btn p" id="pk_ok">✓ تأیید</button></div>
-<div class="pk-s"><input id="pk_q" placeholder="جستجوی آدرس یا مکان…"><button class="btn" id="pk_go">جستجو</button><button class="btn" id="pk_me" aria-label="موقعیت من">📍</button></div>
-<div class="pk-w"><div id="pkmap"></div><div class="pk-pin">📍</div></div>
-<div class="mu" id="pk_c"></div></div>''')
+<script>
+const TYPES={el:{n:"آسانسور",c:"var(--el)"},li:{n:"بالابر",c:"var(--li)"},hl:{n:"هوم لیفت",c:"var(--hl)"}};
+const STAT=["در حال نصب","نصب‌شده","تحویل‌شده","نیاز به سرویس"];
+let items=[],tab="map",db=null,draft=null,memFallback=false;
 
-# 4. state vars
-rep('let items=[],tab="map",db=null,draft=null,memFallback=false;',
-    'let items=[],tab="map",db=null,draft=null,memFallback=false;\nlet LM=null,LS=null,MV=null,PK=null,pkCb=null,BL="st";')
+/* ---------- storage (IndexedDB, fallback to memory) ---------- */
+function openDB(){return new Promise(res=>{try{const r=indexedDB.open("liftmap",1);r.onupgradeneeded=()=>r.result.createObjectStore("p",{keyPath:"id"});r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>{memFallback=true;res()}}catch(e){memFallback=true;res()}})}
+function loadAll(){return new Promise(res=>{if(!db)return res([]);try{const q=db.transaction("p").objectStore("p").getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])}catch(e){res([])}})}
+function put(o){if(!db)return;try{const t=db.transaction("p","readwrite");t.objectStore("p").put(o);t.onerror=t.onabort=()=>alert("ذخیرهٔ دائمی انجام نشد (احتمالاً حافظهٔ مرورگر پر است). ویدیو یا عکس‌های کمتری اضافه کنید.")}catch(e){alert("ذخیرهٔ دائمی انجام نشد.")}}
+function del(id){if(!db)return;try{db.transaction("p","readwrite").objectStore("p").delete(id)}catch(e){}}
 
-# 5. showcase order + drawShow map
-rep('drawShow();$("#show").classList.add("on")}','$("#show").classList.add("on");drawShow()}')
-rep('function drawShow(){const p=sl[si],n=sl.length,','function drawShow(){if(LS){LS.remove();LS=null}const p=sl[si],n=sl.length,')
-rep('${p.lat!=null?mapView(p.id).replace(/<div class="note">[\\s\\S]*$/,""):""}',
-    '${p.lat!=null?(typeof L!=="undefined"?\'<div class="mapbox"><div id="smap" class="lmap"></div></div>\':svgMap(p.id).replace(/<div class="note">[\\s\\S]*$/,"")):""}')
-rep('$("#sx").onclick=()=>$("#show").classList.remove("on");','$("#sx").onclick=()=>{if(LS){LS.remove();LS=null}$("#show").classList.remove("on")};')
-rep('document.querySelectorAll(".sh-med img").forEach(i=>i.onclick=()=>viewImg(i.src))}',
-    'document.querySelectorAll(".sh-med img").forEach(i=>i.onclick=()=>viewImg(i.src));\n  if(p.lat!=null&&$("#smap")){LS=initMap("smap",[p],true);setTimeout(()=>{if(LS)LS.invalidateSize()},120)}}')
-rep('!e.target.closest(".sh-med")','!e.target.closest(".sh-med,.mapbox")')
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const gmap=p=>`https://www.google.com/maps?q=${p.lat},${p.lng}`;
+function resize(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=900,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.7))};im.src=r.result};r.readAsDataURL(file)})}
 
-# 6. chips reset view
-rep('e.onclick=()=>{flt=e.dataset.f;render()}','e.onclick=()=>{flt=e.dataset.f;MV=null;render()}')
-
-# 7. render: destroy/init
-rep('function render(){\n','function render(){\n  if(LM){LM.remove();LM=null}\n')
-rep("+'</div>';bind();","+'</div>';bind();\n  if(tab===\"map\"&&$(\"#lmap\"))LM=initMap(\"lmap\",vis().filter(hasLoc),false);")
-
-# 8. rename old svg map and add new internal map code
-rep('function mapView(hl){','function svgMap(hl){')
-
-newjs=r'''/* ---------- internal map (Leaflet + OpenStreetMap) ---------- */
-const HEX={el:"#1d6fe8",li:"#e8832a",hl:"#8b5cf6"};
-const hasLoc=p=>p.lat!=null&&p.lng!=null;
-try{BL=localStorage.getItem("lm_bl")==="sa"?"sa":"st"}catch(e){}
-function mkMap(el){
-  const m=L.map(el,{attributionControl:false,maxZoom:19});
-  L.control.attribution({prefix:false}).addTo(m);
-  const st=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:"tl-street",attribution:"© OpenStreetMap"});
-  const sa=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri"});
-  (BL==="sa"?sa:st).addTo(m);
-  L.control.layers({"🗺 نقشه":st,"🛰 ماهواره":sa},null,{position:"topright"}).addTo(m);
-  m.on("baselayerchange",e=>{BL=e.layer===sa?"sa":"st";try{localStorage.setItem("lm_bl",BL)}catch(x){}});
-  return m;
+/* ---------- views ---------- */
+let flt="all",q="",sl=[],si=0;
+const DS={co:"",ph:"",th:"auto",tab:"map",hc:false,start:false};
+const S=(()=>{try{return Object.assign({},DS,JSON.parse(localStorage.getItem("lm_s")||"{}"))}catch(e){return Object.assign({},DS)}})();
+function applyS(){const r=document.documentElement;if(S.th==="auto")r.removeAttribute("data-theme");else r.dataset.theme=S.th;$("#ttl").textContent="🏗️ "+(S.co||"نقشه آسانسور و بالابر")}
+const vis=()=>items.filter(p=>(flt==="all"||p.type===flt)&&(!q||[p.name,p.client,p.spec,p.notes,p.status].join(" ").includes(q)));
+const nf=n=>n.toLocaleString("fa");
+const b2d=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+const d2b=u=>{const [h,x]=u.split(","),s=atob(x),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new Blob([a],{type:h.match(/:(.*?);/)[1]})};
+function chips(){const c=t=>items.filter(p=>p.type===t).length;
+  return '<div class="chips">'+[["all","همه",items.length]].concat(Object.keys(TYPES).map(k=>[k,TYPES[k].n,c(k)])).map(a=>`<button class="chip${flt===a[0]?" on":""}" data-f="${a[0]}">${a[1]}<b>${nf(a[2])}</b></button>`).join("")+'</div>'+(tab==="list"?`<input id="sq" placeholder="جستجو در نام، کارفرما، توضیحات…" value="${esc(q)}" style="margin-bottom:10px">`:"")}
+function bind(){const m=$("#main"),go=r=>r.querySelectorAll("[data-id]").forEach(e=>e.onclick=()=>showDetail(e.dataset.id));go(m);
+  m.querySelectorAll("[data-f]").forEach(e=>e.onclick=()=>{flt=e.dataset.f;render()});
+  const s=$("#sq");if(s)s.oninput=()=>{q=s.value.trim();const v=$("#vw");v.innerHTML=listView()||'<div class="empty">موردی پیدا نشد</div>';go(v)}}
+function shareP(p){const t=p.name+(p.spec?" — "+p.spec:"")+(p.lat!=null?"\n"+gmap(p):"");
+  if(navigator.share)navigator.share({title:p.name,text:t}).catch(e=>{if(e.name!=="AbortError")prompt("کپی کنید:",t)});else prompt("کپی کنید:",t)}
+function dl(name,data){const b=data instanceof Blob?data:new Blob([data],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function saveVid(b){const e=(b.type.split("/")[1]||"mp4").split(";")[0];dl("video."+(["mp4","webm","mov"].includes(e)?e:"mp4"),b)}
+function showcase(i){sl=vis();if(!sl.length){alert("موردی برای نمایش نیست");return}si=Math.max(0,Math.min(i||0,sl.length-1));$("#show").classList.add("on");drawShow()}
+function drawShow(){if(showMap){showMap.remove();showMap=null}const p=sl[si],n=sl.length,
+  ph=(p.photos||[]).map(s=>`<img src="${s}" alt="">`).join(""),vd=(p.videos||[]).map(b=>`<video src="${URL.createObjectURL(b)}" controls playsinline preload="metadata"></video>`).join(""),
+  rows=[["کارفرما",S.hc?"":p.client],["مشخصات",p.spec],["وضعیت",p.status],["تاریخ نصب",p.date]].filter(r=>r[1]).map(r=>`<div class="kv"><span class="mu">${r[0]}</span><span>${esc(r[1])}</span></div>`).join("");
+  $("#show").innerHTML=`<div class="sh-top"><b>${esc(S.co||"نمونه‌کارها")}</b><span class="mu">${nf(si+1)} / ${nf(n)}</span><button class="btn" id="sx">✕ بستن</button></div>
+  <div class="sh-body"><h2 style="margin:4px 0 8px">${esc(p.name)} <span class="badge" style="background:${TYPES[p.type].c}">${TYPES[p.type].n}</span></h2>
+  ${p.lat!=null?(typeof L==="undefined"?svgMap(p.id).replace(/<div class="note">[\s\S]*$/,""):'<div class="mapbox"><div id="smap" class="lmap"></div></div>'):""}
+  ${ph||vd?`<div class="sh-med">${ph}${vd}</div>`:""}${rows}${p.notes?`<p>${esc(p.notes)}</p>`:""}${S.ph?`<p class="mu">📞 ${esc(S.ph)}</p>`:""}</div>
+  <div class="sh-nav"><button class="btn" id="spv">→ قبلی</button>${p.lat!=null?`<a class="btn p" href="${gmap(p)}" target="_blank" rel="noopener">📍 گوگل‌مپ</a>`:""}<button class="btn" id="snx">بعدی ←</button></div>`;
+  $("#sx").onclick=()=>{$("#show").classList.remove("on");if(showMap){showMap.remove();showMap=null}};
+  $("#spv").onclick=()=>{si=(si-1+n)%n;drawShow()};$("#snx").onclick=()=>{si=(si+1)%n;drawShow()};
+  document.querySelectorAll(".sh-med img").forEach(i=>i.onclick=()=>viewImg(i.src));
+  const sm=$("#smap");if(sm&&typeof L!=="undefined")showMap=buildMap(sm,[p],{zoom:16,big:true,noClick:true})}
+let tx=0;$("#show").addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
+$("#show").addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>70&&sl.length>1&&!e.target.closest(".sh-med")){si=(si+(d<0?1:-1)+sl.length)%sl.length;drawShow()}},{passive:true});
+$("#pl0").onclick=()=>showcase(0);
+$("#se").onclick=()=>{openSheet(`<h2 style="margin:0 0 8px">⚙️ تنظیمات</h2>
+  <label>نام شرکت / برند (بالای برنامه و حالت نمایش)</label><input id="s_co" value="${esc(S.co)}">
+  <label>شمارهٔ تماس (در حالت نمایش)</label><input id="s_ph" inputmode="tel" value="${esc(S.ph)}">
+  <label>پوسته</label><select id="s_th"><option value="auto">خودکار</option><option value="light">روشن</option><option value="dark">تیره</option></select>
+  <label>صفحهٔ شروع</label><select id="s_tab"><option value="map">نقشه</option><option value="list">فهرست</option></select>
+  <label><input type="checkbox" id="s_hc" style="width:auto"> مخفی کردن نام کارفرما در حالت نمایش</label>
+  <label><input type="checkbox" id="s_st" style="width:auto"> باز شدن برنامه مستقیم در حالت نمایش</label>
+  <p class="mu">برای دسترسی سریع، لینک برنامه را به صفحهٔ اصلی گوشی اضافه کنید. با گذاشتن <b>#showcase</b> آخر لینک هم مستقیم وارد حالت نمایش می‌شود.</p>
+  <div class="row"><button class="btn p" id="s_ok" style="flex:1">ذخیره</button><button class="btn" id="s_cl">بستن</button></div>`);
+  $("#s_th").value=S.th;$("#s_tab").value=S.tab;$("#s_hc").checked=S.hc;$("#s_st").checked=S.start;$("#s_cl").onclick=closeSheet;
+  $("#s_ok").onclick=()=>{S.co=$("#s_co").value.trim();S.ph=$("#s_ph").value.trim();S.th=$("#s_th").value;S.tab=$("#s_tab").value;S.hc=$("#s_hc").checked;S.start=$("#s_st").checked;try{localStorage.setItem("lm_s",JSON.stringify(S))}catch(e){}applyS();closeSheet()}};
+function render(){
+  if(mainMap){mainMap.remove();mainMap=null}
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+  const m=$("#main");
+  if(!items.length){m.innerHTML='<div class="empty">هنوز پروژه‌ای ثبت نشده.<br>با دکمه + اولین مورد را اضافه کنید.</div>';return}
+  m.innerHTML=chips()+'<div id="vw">'+((tab==="map"?mapView():listView())||'<div class="empty">موردی پیدا نشد</div>')+'</div>';bind();if(tab==="map")initMain();
 }
-const pin=(p,big)=>{const z=big?30:22;return L.divIcon({className:"",html:`<div class="pin" style="background:${TYPES[p.type].c}"></div>`,iconSize:[z,z],iconAnchor:[z/2,z/2]})};
-function initMap(el,pts,single){
-  if(typeof L==="undefined"||!document.getElementById(el)||!pts.length)return null;
-  const m=mkMap(el),grp=L.featureGroup();
-  pts.forEach(p=>{const k=L.marker([p.lat,p.lng],{icon:pin(p,single)});
-    if(!single){k.on("click",()=>showDetail(p.id));k.bindTooltip(p.name,{permanent:true,direction:"top",offset:[0,-12],className:"lbl"})}
-    k.addTo(grp)});
-  grp.addTo(m);
-  if(single)m.setView([pts[0].lat,pts[0].lng],16);
-  else if(pts.length===1)m.setView([pts[0].lat,pts[0].lng],15);
-  else if(MV)m.setView(MV.c,MV.z);
-  else m.fitBounds(grp.getBounds(),{padding:[30,30],maxZoom:17});
-  const lb=()=>m.getContainer().classList.toggle("nolbl",m.getZoom()<14);
-  m.on("zoomend",lb);lb();
-  if(!single)m.on("moveend",()=>{MV={c:m.getCenter(),z:m.getZoom()}});
-  return m;
+function listView(){
+  return vis().sort((a,b)=>b.id.localeCompare(a.id)).map(p=>`<div class="card" data-id="${p.id}">
+  ${p.photos&&p.photos[0]?`<img class="thumb" src="${p.photos[0]}" alt="">`:'<div class="thumb"></div>'}
+  <div><b>${esc(p.name)}</b><span class="badge" style="background:${TYPES[p.type].c}">${TYPES[p.type].n}</span>
+  <div class="mu">${esc(p.client||"")} ${p.status?"· "+esc(p.status):""} ${(p.videos||[]).length?"· 🎥 "+p.videos.length:""}</div></div></div>`).join("");
 }
-function mapView(){
-  const pts=vis().filter(hasLoc);
+function svgMap(hl){
+  const pts=vis().filter(p=>p.lat!=null&&p.lng!=null);
   if(!pts.length)return listView();
-  if(typeof L==="undefined")return svgMap();
-  return `<div class="mapbox"><div id="lmap" class="lmap"></div></div>
-  <div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. برای دیدن نام پروژهها بیشتر زوم کنید. با دکمهٔ بالای نقشه میتوانید بین «نقشه» و «ماهواره» جابهجا شوید.</div>`;
+  const W=400,H=500,pad=40;
+  let la=pts.map(p=>p.lat),lo=pts.map(p=>p.lng);
+  let minA=Math.min(...la),maxA=Math.max(...la),minO=Math.min(...lo),maxO=Math.max(...lo);
+  const dA=Math.max(maxA-minA,0.002),dO=Math.max(maxO-minO,0.002);
+  const cosk=Math.cos((minA+maxA)/2*Math.PI/180);
+  const sc=Math.min((W-2*pad)/(dO*cosk),(H-2*pad)/dA);
+  const cx=(minO+maxO)/2,cy=(minA+maxA)/2;
+  const X=o=>W/2+(o-cx)*cosk*sc,Y=a=>H/2-(a-cy)*sc;
+  let g="";for(let i=1;i<8;i++){g+=`<line x1="${i*W/8}" y1="0" x2="${i*W/8}" y2="${H}" stroke="var(--bd)"/><line x1="0" y1="${i*H/8}" x2="${W}" y2="${i*H/8}" stroke="var(--bd)"/>`}
+  const mk=pts.map(p=>`<g data-id="${p.id}" style="cursor:pointer">${hl===p.id?`<circle cx="${X(p.lng)}" cy="${Y(p.lat)}" r="26" fill="${TYPES[p.type].c}" opacity=".25"/>`:""}<circle cx="${X(p.lng)}" cy="${Y(p.lat)}" r="${hl===p.id?18:14}" fill="${TYPES[p.type].c}" stroke="#fff" stroke-width="3" opacity="${hl&&hl!==p.id?.45:1}"/><text x="${X(p.lng)}" y="${Y(p.lat)-20}" text-anchor="middle" font-size="12" fill="var(--tx)">${esc(p.name.slice(0,14))}</text></g>`).join("");
+  return `<div class="mapbox"><svg viewBox="0 0 ${W} ${H}">${g}${mk}</svg></div>
+  <div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. این نمای شماتیک مکان‌هاست؛ برای نقشهٔ خیابانی، در جزئیات هر پروژه «باز کردن در گوگل‌مپ» را بزنید.</div>`;
 }
-function openPicker(c,cb){
-  if(typeof L==="undefined"){alert("بارگذاری نقشه ممکن نشد. اینترنت را بررسی کنید و صفحه را دوباره باز کنید.");return}
-  pkCb=cb;$("#pick").classList.add("on");
-  if(PK){PK.remove();PK=null}
-  setTimeout(()=>{
-    PK=mkMap("pkmap");
-    const pts=items.filter(hasLoc);let ctr=c,z=17;
-    if(!ctr){if(pts.length){ctr=L.latLngBounds(pts.map(p=>[p.lat,p.lng])).getCenter();z=12}else{ctr=[35.6892,51.389];z=11}}
-    PK.setView(ctr,z);
-    pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:6,color:"#fff",weight:2,fillColor:HEX[p.type]||"#1d6fe8",fillOpacity:.95,interactive:false}).addTo(PK));
-    const u=()=>{const t=PK.getCenter();$("#pk_c").textContent=t.lat.toFixed(5)+" , "+t.lng.toFixed(5)};
-    PK.on("move",u);u();PK.invalidateSize();
-  },60);
+
+/* ---------- real map (Leaflet + OpenStreetMap) ---------- */
+let mainMap=null,showMap=null,pickMap=null;
+const hasLoc=p=>p.lat!=null&&p.lng!=null;
+function mapView(){return typeof L==="undefined"?svgMap():'<div class="mapbox"><div id="lmap" class="lmap"></div></div><div class="note">🔵 آسانسور &nbsp; 🟠 بالابر &nbsp; 🟣 هوم لیفت — روی هر نقطه بزنید. برای دیدن نام پروژه‌ها نقشه را بزرگ‌نمایی کنید. (نقشه برای نمایش به اینترنت نیاز دارد)</div>'}
+function pinIcon(p,big){return L.divIcon({className:"pinw",iconSize:[30,30],html:`<div class="pin${big?" big":""}" style="background:${TYPES[p.type].c}"></div><div class="pin-l">${esc(p.name)}</div>`})}
+function addTiles(m){L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m)}
+function buildMap(el,pts,o){o=o||{};
+  const m=L.map(el);addTiles(m);
+  const grp=(o.cluster&&L.markerClusterGroup)?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,iconCreateFunction:c=>L.divIcon({className:"pinw",iconSize:[38,38],html:`<div class="cl">${nf(c.getChildCount())}</div>`})}):L.layerGroup();
+  pts.forEach(p=>{const mk=L.marker([p.lat,p.lng],{icon:pinIcon(p,o.big)});if(!o.noClick)mk.on("click",()=>showDetail(p.id));grp.addLayer(mk)});
+  grp.addTo(m);
+  if(pts.length===1)m.setView([pts[0].lat,pts[0].lng],o.zoom||15);
+  else if(pts.length)m.fitBounds(L.latLngBounds(pts.map(p=>[p.lat,p.lng])),{padding:[30,30],maxZoom:15});
+  else m.setView([32.4,53.7],5);
+  const lb=()=>el.classList.toggle("zl",m.getZoom()>=14);m.on("zoomend",lb);lb();
+  setTimeout(()=>m.invalidateSize(),100);
+  return m}
+function initMain(){const el=$("#lmap");if(!el||typeof L==="undefined")return;mainMap=buildMap(el,vis().filter(hasLoc),{cluster:true})}
+function closePick(){const el=$("#pick");if(pickMap){pickMap.remove();pickMap=null}el.classList.remove("on");el.innerHTML=""}
+function pickLoc(la,lo,done){
+  if(typeof L==="undefined"){alert("برای نمایش نقشه به اینترنت نیاز است. مختصات را دستی وارد کنید یا «ثبت موقعیت فعلی من» را بزنید.");return}
+  const el=$("#pick"),has=isFinite(la)&&isFinite(lo),all=items.filter(hasLoc);
+  el.innerHTML=`<div class="sh-top"><b>انتخاب موقعیت روی نقشه</b><button class="btn" id="pk_x">✕ بستن</button></div>
+  <div class="row" style="padding:0 14px 8px"><input id="pk_q" placeholder="جستجوی آدرس یا مکان…"><button class="btn" id="pk_go">🔍</button><button class="btn" id="pk_me" aria-label="موقعیت من">📍</button></div>
+  <div id="pk_m" class="lmap" style="flex:1;height:auto;min-height:0"></div>
+  <div class="sh-nav"><div class="mu" id="pk_t" style="flex:1;align-self:center">روی نقشه بزنید یا پین را بکشید</div><button class="btn p" id="pk_ok" disabled style="flex:none;padding:10px 26px">تأیید</button></div>`;
+  el.classList.add("on");
+  const m=pickMap=L.map("pk_m");addTiles(m);
+  if(has)m.setView([la,lo],17);else if(all.length)m.fitBounds(L.latLngBounds(all.map(p=>[p.lat,p.lng])),{padding:[30,30],maxZoom:12});else m.setView([32.4,53.7],5);
+  setTimeout(()=>m.invalidateSize(),100);
+  let pos=null,mk=null;
+  const upd=()=>{$("#pk_t").textContent=pos[0].toFixed(5)+" , "+pos[1].toFixed(5);$("#pk_ok").disabled=false};
+  const set=(a,b,z)=>{pos=[a,b];if(!mk){mk=L.marker(pos,{draggable:true,icon:L.divIcon({className:"pinw",iconSize:[30,30],html:'<div class="pin big" style="background:#e11d48"></div>'})}).addTo(m);mk.on("dragend",()=>{const c=mk.getLatLng();pos=[c.lat,c.lng];upd()})}else mk.setLatLng(pos);if(z)m.setView(pos,z);upd()};
+  if(has)set(la,lo);
+  m.on("click",e=>set(e.latlng.lat,e.latlng.lng));
+  $("#pk_x").onclick=closePick;
+  $("#pk_ok").onclick=()=>{const p=pos;closePick();if(p)done(p[0],p[1])};
+  $("#pk_me").onclick=()=>{if(!navigator.geolocation){alert("مرورگر از GPS پشتیبانی نمی‌کند.");return}navigator.geolocation.getCurrentPosition(r=>set(r.coords.latitude,r.coords.longitude,17),()=>alert("دسترسی به موقعیت ممکن نشد. مجوز مکان را بدهید."),{enableHighAccuracy:true,timeout:15000})};
+  const go=async()=>{const t=$("#pk_q").value.trim();if(!t)return;$("#pk_t").textContent="در حال جستجو…";
+    try{const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=fa&q="+encodeURIComponent(t));const j=await r.json();if(!j.length){$("#pk_t").textContent="مکانی پیدا نشد";return}set(+j[0].lat,+j[0].lon,16)}catch(e){$("#pk_t").textContent="جستجو ممکن نشد (اینترنت را بررسی کنید)"}};
+  $("#pk_go").onclick=go;$("#pk_q").onkeydown=e=>{if(e.key==="Enter")go()};
 }
-function closePicker(){if(PK){PK.remove();PK=null}$("#pick").classList.remove("on")}
-$("#pk_x").onclick=closePicker;
-$("#pk_ok").onclick=()=>{if(!PK)return;const t=PK.getCenter(),cb=pkCb;closePicker();if(cb)cb(t.lat,t.lng)};
-$("#pk_go").onclick=async()=>{const t=$("#pk_q").value.trim(),m=$("#pk_c");if(!t||!PK)return;m.textContent="در حال جستجو…";
-  try{const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=fa&q="+encodeURIComponent(t));const a=await r.json();
-    if(a&&a[0]&&PK)PK.setView([parseFloat(a[0].lat),parseFloat(a[0].lon)],17);else m.textContent="چیزی پیدا نشد"}
-  catch(e){m.textContent="جستجو انجام نشد (اینترنت را بررسی کنید)"}};
-$("#pk_q").onkeydown=e=>{if(e.key==="Enter")$("#pk_go").click()};
-$("#pk_me").onclick=()=>{const m=$("#pk_c");if(!navigator.geolocation){m.textContent="GPS در دسترس نیست";return}m.textContent="در حال دریافت موقعیت…";
-  navigator.geolocation.getCurrentPosition(r=>{if(PK)PK.setView([r.coords.latitude,r.coords.longitude],18)},()=>{m.textContent="دسترسی به موقعیت ممکن نشد"},{enableHighAccuracy:true,timeout:15000})};
 
-/* ---------- sheet ---------- */'''
-rep('/* ---------- sheet ---------- */',newjs)
+/* ---------- sheet ---------- */
+function openSheet(h){$("#panel").innerHTML=h;$("#sheet").classList.add("show")}
+function closeSheet(){$("#sheet").classList.remove("show")}
+$("#sheet").onclick=e=>{if(e.target.id==="sheet")closeSheet()};
 
-# 9. form picker button
-old_a='<a class="btn" id="omap" href="https://www.google.com/maps" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none">🗺 انتخاب روی نقشه</a>'
-rep(old_a,'<button class="btn" id="omap" style="flex:1">🗺 انتخاب روی نقشه</button>')
-newh='  $("#omap").onclick=()=>{const la=parseFloat($("#f_lat").value),lo=parseFloat($("#f_lng").value);openPicker(isFinite(la)&&isFinite(lo)?[la,lo]:null,(a,o)=>{$("#f_lat").value=a.toFixed(6);$("#f_lng").value=o.toFixed(6);$("#gpsmsg").textContent="ثبت شد ✓"})};\n'
-s,n=re.subn(r'  \$\("#omap"\)\.onclick=.*\n',lambda m:newh,s)
-assert n==1
-open('index.html','w',encoding='utf-8').write(s)
-print("ok",len(s))
-PYEOF
-python3 - <<'EOF'
-import re,subprocess
-s=open('/mnt/user-data/outputs/index.html',encoding='utf-8').read()
-blocks=re.findall(r'<script>(.*?)</script>',s,re.S)
-open('/home/claude/app.js','w').write(blocks[-1])
-print(subprocess.run(['node','--check','/home/claude/app.js'],capture_output=True,text=True))
-EOF
-  {"returncode":0,"stdout":"CompletedProcess(args=['node', '--check', '/home/claude/app.js'], returncode=0, stdout='', stderr='')\n","stderr":"Traceback (most recent call last):\n  File \"<stdin>\", line 10, in <module>\n  File \"<stdin>\", line 6, in rep\nAssertionError: ('<title>نقشه آسانسور و بالابر</title>\\n<style>', 0)\n"}
+function showDetail(id){
+  const p=items.find(x=>x.id===id);if(!p)return;
+  openSheet(`<h2 style="margin:0 0 6px">${esc(p.name)}</h2>
+  <span class="badge" style="background:${TYPES[p.type].c}">${TYPES[p.type].n}</span>
+  <div style="margin-top:10px">
+  ${[["کارفرما",p.client],["ظرفیت / مشخصات",p.spec],["وضعیت",p.status],["تاریخ نصب",p.date],["مختصات",p.lat!=null?p.lat.toFixed(5)+" , "+p.lng.toFixed(5):""]].filter(r=>r[1]).map(r=>`<div class="kv"><span class="mu">${r[0]}</span><span>${esc(r[1])}</span></div>`).join("")}
+  ${p.notes?`<p>${esc(p.notes)}</p>`:""}</div>
+  <div class="photos" id="ph">${(p.photos||[]).map((s,i)=>`<div><img src="${s}" data-i="${i}" alt=""></div>`).join("")}</div>
+  <div class="vids" id="vd">${(p.videos||[]).map((v,i)=>{const u=URL.createObjectURL(v);return `<video src="${u}" controls playsinline preload="metadata"></video><button class="btn" data-dv="${i}" style="margin-top:6px">⬇️ ذخیرهٔ ویدیو ${i+1}</button>`}).join("")}</div>
+  <div class="row" style="margin-top:14px">
+   ${p.lat!=null?`<a class="btn p" style="text-decoration:none;flex:1;text-align:center" href="${gmap(p)}" target="_blank" rel="noopener">باز کردن در گوگل‌مپ</a>`:""}
+   <button class="btn" id="ed">ویرایش</button><button class="btn" id="cl">بستن</button></div>
+  <div class="row" style="margin-top:8px">${p.lat!=null?`<a class="btn" style="text-decoration:none;flex:1;text-align:center" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">🧭 مسیریابی</a>`:""}<button class="btn" id="shr" style="flex:1">📤 اشتراک</button><button class="btn" id="pl" style="flex:1">🎬 نمایش</button></div>`);
+  $("#ed").onclick=()=>form(p);$("#cl").onclick=closeSheet;
+  $("#shr").onclick=()=>shareP(p);
+  $("#pl").onclick=()=>{closeSheet();let i=vis().findIndex(x=>x.id===p.id);if(i<0){flt="all";q="";render();i=vis().findIndex(x=>x.id===p.id)}showcase(i)};
+  document.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>saveVid(p.videos[b.dataset.dv]));
+  document.querySelectorAll("#ph img").forEach(i=>i.onclick=()=>viewImg(p.photos[i.dataset.i]));
+}
+function viewImg(s){$("#vimg").src=s;$("#viewer").style.display="flex"}
+$("#viewer").onclick=()=>$("#viewer").style.display="none";
+
+function form(p){
+  draft=p?Object.assign({},p,{photos:(p.photos||[]).slice(),videos:(p.videos||[]).slice()}):{id:Date.now().toString(36),type:"el",name:"",client:"",spec:"",status:STAT[0],date:"",notes:"",lat:null,lng:null,photos:[],videos:[]};
+  const d=draft;
+  openSheet(`<h2 style="margin:0">${p?"ویرایش":"پروژه جدید"}</h2>
+  <label>نام پروژه</label><input id="f_name" value="${esc(d.name)}">
+  <label>نوع</label><select id="f_type"><option value="el">آسانسور</option><option value="li">بالابر</option><option value="hl">هوم لیفت</option></select>
+  <label>کارفرما</label><input id="f_client" value="${esc(d.client)}">
+  <label>ظرفیت / مشخصات</label><input id="f_spec" value="${esc(d.spec)}" placeholder="مثلاً ۸ نفره، ۶ توقف">
+  <div class="row"><div style="flex:1"><label>وضعیت</label><select id="f_status">${STAT.map(s=>`<option>${s}</option>`).join("")}</select></div>
+  <div style="flex:1"><label>تاریخ نصب</label><input id="f_date" value="${esc(d.date)}" placeholder="۱۴۰۵/۰۸/۲۳"></div></div>
+  <label>موقعیت</label>
+  <div class="row"><input id="f_lat" inputmode="decimal" placeholder="عرض جغرافیایی" value="${d.lat??""}"><input id="f_lng" inputmode="decimal" placeholder="طول جغرافیایی" value="${d.lng??""}"></div>
+  <button class="btn" id="gps" style="margin-top:8px;width:100%">📍 ثبت موقعیت فعلی من</button>
+  <button class="btn p" id="omap" style="width:100%;margin-top:8px">🗺️ انتخاب روی نقشه</button>
+  <div class="mu" id="gpsmsg"></div>
+  <label>توضیحات</label><textarea id="f_notes" rows="3">${esc(d.notes)}</textarea>
+  <label>عکس‌ها</label><input type="file" id="f_ph" accept="image/*" multiple>
+  <div class="photos" id="pv"></div>
+  <label>ویدیوها</label><input type="file" id="f_vid" accept="video/*" multiple>
+  <div class="mu">ویدیوها فقط روی همین دستگاه ذخیره می‌شوند و در «پشتیبان» متنی نیستند. حجم زیاد حافظهٔ مرورگر را پر می‌کند.</div>
+  <div id="vv"></div>
+  <div class="row" style="margin-top:16px"><button class="btn p" id="sv" style="flex:1">ذخیره</button>
+  ${p?'<button class="btn d" id="rm">حذف</button>':""}<button class="btn" id="cn">انصراف</button></div>`);
+  $("#f_type").value=d.type;$("#f_status").value=d.status;
+  pv();vv();
+  $("#f_vid").onchange=e=>{for(const f of e.target.files){if(f.size>150*1024*1024&&!confirm("این ویدیو بزرگ است (بیش از ۱۵۰ مگابایت) و ممکن است ذخیره نشود. ادامه می‌دهید؟"))continue;d.videos.push(new Blob([f],{type:f.type||"video/mp4"}))}e.target.value="";vv()};
+  $("#f_ph").onchange=async e=>{for(const f of e.target.files)d.photos.push(await resize(f));e.target.value="";pv()};
+  $("#gps").onclick=()=>{const m=$("#gpsmsg");m.textContent="در حال دریافت موقعیت…";
+    if(!navigator.geolocation){m.textContent="مرورگر از GPS پشتیبانی نمی‌کند؛ مختصات را دستی وارد کنید.";return}
+    navigator.geolocation.getCurrentPosition(r=>{$("#f_lat").value=r.coords.latitude.toFixed(6);$("#f_lng").value=r.coords.longitude.toFixed(6);m.textContent="ثبت شد ✓"},()=>m.textContent="دسترسی به موقعیت ممکن نشد. مجوز مکان را بدهید یا مختصات را دستی وارد کنید.",{enableHighAccuracy:true,timeout:15000})};
+  $("#cn").onclick=()=>p?showDetail(p.id):closeSheet();
+  const fa=s=>s.replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/٫/g,".");
+  function parseLoc(t){t=fa(t||"");let m=t.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||t.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)||t.match(/[?&](?:q|ll|query)=(-?\d+\.\d+),(-?\d+\.\d+)/)||t.match(/(-?\d{1,3}\.\d+)[\s,،;]+(-?\d{1,3}\.\d+)/);return m?[parseFloat(m[1]),parseFloat(m[2])]:null}
+  function applyLoc(t){const r=parseLoc(t),m=$("#gpsmsg");if(!r||Math.abs(r[0])>90||Math.abs(r[1])>180){m.textContent="مختصاتی پیدا نشد. اگر لینک کوتاه (goo.gl) است، لینک را باز کنید و مختصات بالای صفحه را کپی کنید.";return}$("#f_lat").value=r[0];$("#f_lng").value=r[1];m.textContent="ثبت شد ✓"}
+  $("#omap").onclick=()=>pickLoc(parseFloat($("#f_lat").value),parseFloat($("#f_lng").value),(a,b)=>{$("#f_lat").value=a.toFixed(6);$("#f_lng").value=b.toFixed(6);$("#gpsmsg").textContent="ثبت شد ✓"});
+  if(p)$("#rm").onclick=()=>{if(confirm("این پروژه حذف شود؟")){items=items.filter(x=>x.id!==p.id);del(p.id);closeSheet();render()}};
+  $("#sv").onclick=()=>{
+    d.name=$("#f_name").value.trim();if(!d.name){$("#f_name").focus();return}
+    d.type=$("#f_type").value;d.client=$("#f_client").value.trim();d.spec=$("#f_spec").value.trim();d.status=$("#f_status").value;d.date=$("#f_date").value.trim();d.notes=$("#f_notes").value.trim();
+    const la=parseFloat($("#f_lat").value),lo=parseFloat($("#f_lng").value);d.lat=isFinite(la)?la:null;d.lng=isFinite(lo)?lo:null;
+    const i=items.findIndex(x=>x.id===d.id);if(i>=0)items[i]=d;else items.push(d);
+    put(d);closeSheet();render()};
+}
+function vv(){const box=$("#vv");box.innerHTML=draft.videos.map((b,i)=>`<div class="vt"><video src="${URL.createObjectURL(b)}" controls playsinline preload="metadata"></video><i data-v="${i}">×</i></div>`).join("");
+  box.querySelectorAll("[data-v]").forEach(x=>x.onclick=()=>{draft.videos.splice(x.dataset.v,1);vv()})}
+function pv(){$("#pv").innerHTML=draft.photos.map((s,i)=>`<div><img src="${s}" alt=""><i data-r="${i}">×</i></div>`).join("");
+  document.querySelectorAll("[data-r]").forEach(x=>x.onclick=()=>{draft.photos.splice(x.dataset.r,1);pv()})}
+
+/* ---------- backup ---------- */
+$("#bk").onclick=()=>{
+  openSheet(`<h2 style="margin:0 0 8px">پشتیبان‌گیری</h2>
+  <p class="mu">اطلاعات فقط روی همین مرورگر ذخیره می‌شود (ویدیوها در پشتیبان متنی نیستند). برای انتقال به گوشی یا مرورگر دیگر، متن پشتیبان را کپی و در آنجا وارد کنید.</p>
+  <textarea id="bt" rows="6" placeholder="برای وارد کردن، متن پشتیبان را اینجا بچسبانید"></textarea>
+  <div class="row" style="margin-top:10px"><button class="btn" id="exf">💾 ذخیرهٔ فایل (با عکس و ویدیو)</button><button class="btn" id="imf">📂 وارد کردن از فایل</button><input type="file" id="imi" accept=".json,application/json" hidden></div>
+  <div class="row" style="margin-top:8px"><button class="btn" id="ex">نمایش پشتیبان متنی</button><button class="btn p" id="im">وارد کردن</button><button class="btn" id="cl2">بستن</button></div>`);
+  $("#ex").onclick=()=>{$("#bt").value=JSON.stringify(items.map(p=>Object.assign({},p,{videos:undefined})));$("#bt").select()};
+  $("#im").onclick=()=>{try{const a=JSON.parse($("#bt").value);if(!Array.isArray(a))throw 0;a.forEach(o=>{if(o&&o.id&&o.name){const i=items.findIndex(x=>x.id===o.id);o.videos=Array.isArray(o.videos)&&typeof o.videos[0]==="string"?o.videos.map(d2b):(i>=0?items[i].videos||[]:[]);if(i>=0)items[i]=o;else items.push(o);put(o)}});closeSheet();render()}catch(e){alert("متن پشتیبان معتبر نیست")}};
+  $("#cl2").onclick=closeSheet;
+  $("#exf").onclick=async()=>{const b=$("#exf"),t=b.textContent;b.textContent="در حال آماده‌سازی…";try{const o=[];for(const p of items)o.push(Object.assign({},p,{videos:await Promise.all((p.videos||[]).map(b2d))}));dl("lift-map-backup.json",JSON.stringify(o))}catch(e){}finally{b.textContent=t}};
+  $("#imf").onclick=()=>$("#imi").click();
+  $("#imi").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#bt").value=await f.text();$("#im").click()};
+};
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+$("#add").onclick=()=>form(null);
+(async()=>{applyS();tab=S.tab;await openDB();try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}items=await loadAll();render();if(S.start||location.hash==="#showcase")showcase(0)})();
+</script>
+</body>
+</html>
