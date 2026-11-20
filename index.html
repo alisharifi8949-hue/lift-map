@@ -288,8 +288,80 @@ function showDetail(id){
   document.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>saveVid(p.videos[b.dataset.dv]));
   document.querySelectorAll("#ph img").forEach(i=>i.onclick=()=>viewImg(p.photos[i.dataset.i]));
 }
-function viewImg(s){$("#vimg").src=s;$("#viewer").style.display="flex"}
-$("#viewer").onclick=()=>$("#viewer").style.display="none";
+/* ---------- full screen photo gallery ---------- */
+
+let viewerPhotos = [];
+let viewerIndex = 0;
+let viewerStartX = 0;
+let viewerStartY = 0;
+
+function viewImg(s){
+
+  const imgs = [...document.querySelectorAll("#ph img, .sh-med img")]
+    .map(img => img.src)
+    .filter(Boolean);
+
+  viewerPhotos = [...new Set(imgs)];
+
+  viewerIndex = viewerPhotos.indexOf(s);
+
+  if(viewerIndex < 0){
+    viewerPhotos = [s];
+    viewerIndex = 0;
+  }
+
+  updateViewer();
+
+  $("#viewer").style.display="flex";
+}
+
+function updateViewer(){
+  $("#vimg").src = viewerPhotos[viewerIndex];
+}
+
+function changeViewerPhoto(direction){
+
+  if(viewerPhotos.length < 2) return;
+
+  viewerIndex += direction;
+
+  if(viewerIndex < 0){
+    viewerIndex = viewerPhotos.length - 1;
+  }
+
+  if(viewerIndex >= viewerPhotos.length){
+    viewerIndex = 0;
+  }
+
+  updateViewer();
+}
+
+$("#viewer").addEventListener("touchstart",e=>{
+  if(e.touches.length !== 1) return;
+
+  viewerStartX = e.touches[0].clientX;
+  viewerStartY = e.touches[0].clientY;
+
+},{passive:true});
+
+$("#viewer").addEventListener("touchend",e=>{
+
+  if(e.changedTouches.length !== 1) return;
+
+  const dx = e.changedTouches[0].clientX - viewerStartX;
+  const dy = e.changedTouches[0].clientY - viewerStartY;
+
+  if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)*1.3){
+
+    changeViewerPhoto(dx < 0 ? 1 : -1);
+
+  }
+
+},{passive:true});
+
+$("#viewer").onclick=()=>{
+  $("#viewer").style.display="none";
+};
 
 function form(p){
   draft=p?Object.assign({},p,{photos:(p.photos||[]).slice(),videos:(p.videos||[]).slice()}):{id:Date.now().toString(36),type:"el",name:"",client:"",spec:"",status:STAT[0],date:"",notes:"",lat:null,lng:null,photos:[],videos:[]};
