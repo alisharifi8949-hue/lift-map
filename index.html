@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>نقشه آسانسور و بالابر</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css'">
@@ -68,8 +68,38 @@ input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-
 .sh-nav .btn{flex:1;text-align:center;text-decoration:none}
 .big{width:100%;border-radius:12px;margin-top:8px}
 .kv{display:flex;justify-content:space-between;border-bottom:1px solid var(--bd);padding:7px 0}
-#viewer{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:30}
-#viewer img{max-width:96%;max-height:92%}
+/* جلوگیری از زوم رابط کاربری */
+html,body{
+  touch-action:pan-x pan-y;
+  -webkit-text-size-adjust:100%;
+}
+
+/* حفظ زوم و حرکت نقشه */
+.leaflet-container{
+  touch-action:pan-x pan-y pinch-zoom !important;
+}
+
+/* نمایشگر تصاویر */
+#viewer{
+  position:fixed;
+  inset:0;
+  background:#000e;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:30;
+  touch-action:pan-y;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+#viewer img{
+  max-width:96%;
+  max-height:92%;
+  object-fit:contain;
+  -webkit-user-drag:none;
+  user-select:none;
+}
 .empty{text-align:center;color:var(--mu);padding:40px 10px}
 .lmap{height:62vh;width:100%;isolation:isolate;direction:ltr;background:var(--bd);border-radius:14px}
 .sh-body .lmap{height:34vh}
